@@ -9,8 +9,8 @@ import java.nio.charset.StandardCharsets;
  */
 public class OneFileMaker {
 
-    public static final String PLAYER_FILE_PATH = "C:\\Users\\MedBelmahi\\Desktop\\hypersonic\\src\\main\\java\\playerFile\\Player.java";
-    public static final String PACKAGE_PATH = "C:\\Users\\MedBelmahi\\Desktop\\hypersonic\\src\\main\\java\\hypersonic";
+    public static final String PLAYER_FILE_PATH = "C:\\Users\\MedBelmahi\\Desktop\\hypersonic\\hypersonic\\src\\main\\java\\playerFile\\Player.java";
+    public static final String PACKAGE_PATH = "C:\\Users\\MedBelmahi\\Desktop\\hypersonic\\hypersonic\\src\\main\\java\\hypersonic";
 
     public static void main(String[] args) {
         while (true) {

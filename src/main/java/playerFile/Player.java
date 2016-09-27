@@ -140,12 +140,15 @@ class ExtraRangeBox extends Box {
 }
 
 
+
+
 /**
  * Created by Mohamed BELMAHI on 25/09/2016.
  */
 class Floor extends Cell implements Comparable<Floor>{
 
     private int numberOfReachableBox;
+    private boolean isReachable;
 
     Floor(int x, int y) {
         super(x, y);
@@ -169,6 +172,18 @@ class Floor extends Cell implements Comparable<Floor>{
     public int compareTo(Floor o) {
         return this.numberOfReachableBox < o.numberOfReachableBox ? 1 : -1;
     }
+
+    public boolean isReachable() {
+        return isReachable;
+    }
+
+    public void setReachable(boolean reachable) {
+        isReachable = reachable;
+    }
+
+    public <T extends Floor> LinkedList<Direction> getDirections(T destination) {
+        return this.coordinates.getSortedDirection(destination.coordinates);
+    }
 }
 
 
@@ -189,6 +204,8 @@ class Wall extends Cell {
         return 0;
     }
 }
+
+
 
 
 /**
@@ -212,6 +229,80 @@ class Coordinates {
     public boolean equals(Object obj) {
         Coordinates other = (Coordinates) obj;
         return this.x == other.x && this.y == other.y;
+    }
+
+    public LinkedList<Direction> getSortedDirection(Coordinates destination) {
+
+        LinkedList<Direction> directions = new LinkedList<>();
+
+        if (this.y == destination.y) {
+            if (this.x < destination.x) {
+                directions.add(Direction.RIGHT);
+                directions.add(Direction.DOWN);
+                directions.add(Direction.UP);
+                directions.add(Direction.LEFT);
+            }else{
+                directions.add(Direction.LEFT);
+                directions.add(Direction.DOWN);
+                directions.add(Direction.UP);
+                directions.add(Direction.RIGHT);
+            }
+        } else if (this.x == destination.x) {
+            if (this.y < destination.y) {
+                directions.add(Direction.DOWN);
+                directions.add(Direction.RIGHT);
+                directions.add(Direction.LEFT);
+                directions.add(Direction.UP);
+            }else{
+                directions.add(Direction.UP);
+                directions.add(Direction.RIGHT);
+                directions.add(Direction.LEFT);
+                directions.add(Direction.DOWN);
+            }
+        } else if (this.x < destination.x && this.y < destination.y) {
+            int diffX = destination.x - this.x;
+            int diffY = destination.y - this.y;
+
+            if (diffX < diffY) {
+                directions.add(Direction.DOWN);
+                directions.add(Direction.RIGHT);
+                directions.add(Direction.LEFT);
+                directions.add(Direction.UP);
+            }else{
+                directions.add(Direction.RIGHT);
+                directions.add(Direction.DOWN);
+                directions.add(Direction.LEFT);
+                directions.add(Direction.UP);
+            }
+        }else if (this.x > destination.x && this.y > destination.y) {
+            int diffX = destination.x - this.x;
+            int diffY = destination.y - this.y;
+
+            if (diffX < diffY) {
+                directions.add(Direction.LEFT);
+                directions.add(Direction.UP);
+                directions.add(Direction.DOWN);
+                directions.add(Direction.RIGHT);
+            }else{
+                directions.add(Direction.UP);
+                directions.add(Direction.RIGHT);
+                directions.add(Direction.DOWN);
+                directions.add(Direction.RIGHT);
+            }
+        }else if (this.x < destination.x && this.y > destination.y){
+            directions.add(Direction.LEFT);
+            directions.add(Direction.UP);
+            directions.add(Direction.DOWN);
+            directions.add(Direction.RIGHT);
+        }if (this.x > destination.x && this.y < destination.y){
+            directions.add(Direction.LEFT);
+            directions.add(Direction.DOWN);
+            directions.add(Direction.UP);
+            directions.add(Direction.RIGHT);
+        }
+
+
+        return directions;
     }
 }
 
@@ -329,10 +420,11 @@ class Timer{
 
 
 
+
 /**
  * Created by Mohamed BELMAHI on 25/09/2016.
  */
-class FindAllPaths<T> {
+class FindAllPaths<T extends Floor> {
 
     private final GraphFindAllPaths<T> graph;
 
@@ -402,14 +494,90 @@ class FindAllPaths<T> {
 
 
 /**
+ * Created by Mohamed BELMAHI on 26/09/2016.
+ */
+public enum Direction {
+    RIGHT, LEFT, UP, DOWN
+}
+
+
+
+
+/**
+ * Created by Mohamed BELMAHI on 27/09/2016.
+ */
+class FindOptimalPath<T extends Floor> {
+
+    private final GraphFindAllPaths<T> graph;
+
+    public FindOptimalPath(GraphFindAllPaths<T> graph) {
+        if (graph == null) {
+            throw new NullPointerException("The input graph cannot be null.");
+        }
+        this.graph = graph;
+    }
+
+    private void validate (T source, T destination) {
+
+        if (source == null) {
+            throw new NullPointerException("The source: " + source + " cannot be  null.");
+        }
+        if (destination == null) {
+            throw new NullPointerException("The destination: " + destination + " cannot be  null.");
+        }
+        if (source.equals(destination)) {
+            throw new IllegalArgumentException("The source and destination: " + source + " cannot be the same.");
+        }
+    }
+
+    public List<T> getOptimalPath(T source, T destination) {
+        validate(source, destination);
+
+        List<T> path = recursive(source, destination);
+        return path;
+    }
+
+
+    private List<T> recursive(T current, T destination) {
+        List<T> path = new ArrayList<>();
+
+        if (current == destination) {
+            return path;
+        }
+
+        final Map<T, Direction> edges  = graph.edgesFrom(current);
+
+
+        LinkedList<Direction> directions = current.getDirections(destination);
+
+        for (Direction direction : directions) {
+            for (Map.Entry<T, Direction> entry : edges.entrySet()) {
+                if (direction.equals(entry.getValue())) {
+                    path.add(entry.getKey());
+                    path.addAll(recursive(entry.getKey(), destination));
+                    if (path.get(path.size()-1) != destination) {
+                        path.clear();
+                    }
+                }
+            }
+        }
+
+        return path;
+    }
+}
+
+
+
+
+/**
  * Created by Mohamed BELMAHI on 25/09/2016.
  */
-class GraphFindAllPaths<T> implements Iterable<T> {
+class GraphFindAllPaths<T extends Floor> implements Iterable<T> {
 
     /* A map from nodes in the graph to sets of outgoing edges.  Each
      * set of edges is represented by a map from edges to doubles.
      */
-    private final Map<T, Map<T, Double>> graph = new HashMap<T, Map<T, Double>>();
+    private final Map<T, Map<T, Direction>> graph = new HashMap<T, Map<T, Direction>>();
 
     /**
      *  Adds a new node to the graph. If the node already exists then its a
@@ -424,7 +592,7 @@ class GraphFindAllPaths<T> implements Iterable<T> {
         }
         if (graph.containsKey(node)) return false;
 
-        graph.put(node, new HashMap<T, Double>());
+        graph.put(node, new HashMap<T, Direction>());
         return true;
     }
 
@@ -435,11 +603,11 @@ class GraphFindAllPaths<T> implements Iterable<T> {
      *
      * @param source                    the source node.
      * @param destination               the destination node.
-     * @param length                    if length if
+     * @param direction                    if length if
      * @throws NullPointerException     if source or destination is null.
      * @throws NoSuchElementException   if either source of destination does not exists.
      */
-    public void addEdge (T source, T destination, double length) {
+    public void addEdge (T source, T destination, Direction direction) {
         if (source == null || destination == null) {
             throw new NullPointerException("Source and Destination, both should be non-null.");
         }
@@ -447,7 +615,7 @@ class GraphFindAllPaths<T> implements Iterable<T> {
             throw new NoSuchElementException("Source and Destination, both should be part of graph");
         }
         /* A node would always be added so no point returning true or false */
-        graph.get(source).put(destination, length);
+        graph.get(source).put(destination, direction);
     }
 
     /**
@@ -477,11 +645,11 @@ class GraphFindAllPaths<T> implements Iterable<T> {
      * @throws NullPointerException   If input node is null.
      * @throws NoSuchElementException If node is not in graph.
      */
-    public Map<T, Double> edgesFrom(T node) {
+    public Map<T, Direction> edgesFrom(T node) {
         if (node == null) {
             throw new NullPointerException("The node should not be null.");
         }
-        Map<T, Double> edges = graph.get(node);
+        Map<T, Direction> edges = graph.get(node);
         if (edges == null) {
             throw new NoSuchElementException("Source node does not exist.");
         }
@@ -495,6 +663,72 @@ class GraphFindAllPaths<T> implements Iterable<T> {
      */
     public Iterator<T> iterator() {
         return graph.keySet().iterator();
+    }
+}
+
+
+
+
+/**
+ * Created by Mohamed BELMAHI on 26/09/2016.
+ */
+class GraphMaker {
+
+    public static GraphFindAllPaths<Floor> constructGraph(Set<Floor> places, Cell[][] cells) {
+        GraphFindAllPaths<Floor> graphFindAllPaths = new GraphFindAllPaths<Floor>();
+
+        for (Floor currentCell : places) {
+            graphFindAllPaths.addNode(currentCell);
+
+            Cell right = currentCell.rightCell(cells);
+            Cell left = currentCell.leftCell(cells);
+            Cell up = currentCell.upCell(cells);
+            Cell down = currentCell.downCell(cells);
+
+            addEdgeToCurrentCell(graphFindAllPaths, currentCell, right, Direction.RIGHT);
+            addEdgeToCurrentCell(graphFindAllPaths, currentCell, left, Direction.LEFT);
+            addEdgeToCurrentCell(graphFindAllPaths, currentCell, up, Direction.UP);
+            addEdgeToCurrentCell(graphFindAllPaths, currentCell, down, Direction.DOWN);
+        }
+
+        return graphFindAllPaths;
+    }
+
+    public static void addEdgeToCurrentCell(final GraphFindAllPaths<Floor> graphFindAllPaths, Floor currentCell, Cell destination, Direction direction) {
+        if (destination != null && destination.isFreePlace()) {
+            graphFindAllPaths.addNode((Floor) destination);
+            graphFindAllPaths.addEdge(currentCell, (Floor) destination, direction);
+        }
+    }
+}
+
+
+
+
+/**
+ * Created by Mohamed BELMAHI on 26/09/2016.
+ */
+class ReachabilityCalculator<T extends Floor> {
+    private final GraphFindAllPaths<T> graph;
+
+
+    public ReachabilityCalculator(GraphFindAllPaths<T> graph) {
+        if (graph == null) {
+            throw new NullPointerException("The input graph cannot be null.");
+        }
+        this.graph = graph;
+    }
+
+    public void setReachableCases(T currentNode) {
+        currentNode.setReachable(true);
+
+        final Set<T> edges  = graph.edgesFrom(currentNode).keySet();
+
+        for (T t : edges) {
+            if (!t.isReachable()) {
+                setReachableCases(t);
+            }
+        }
     }
 }
 
@@ -518,7 +752,7 @@ class Grid{
     private List<Item> items;
     private Map<Integer, BomberMan> players;
     private BomberMan myPlayer;
-    private GraphFindAllPaths<Cell> pathGraph;
+    private GraphFindAllPaths<Floor> pathGraph;
 
     public Grid(int width, int height, int myPlayerId){
         this.width = width;
@@ -577,20 +811,11 @@ class Grid{
     }
 
     private Coordinates bestRichPlace() {
-        Set<Floor> places = new TreeSet<Floor>();
 
-        for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
-                if (cells[y][x] instanceof Floor) {
-                    setNumberOfReachableBox(y, x);
-                    places.add((Floor) cells[y][x]);
-                }
-            }
-        }
-        System.err.println("first place " + places.iterator().next().coordinates.toString());
+        /*System.err.println("first place " + places.iterator().next().coordinates.toString());
         this.pathGraph = constructGraph(places);
         System.err.println("traitement 1");
-        FindAllPaths<Cell> findAllPaths = new FindAllPaths<Cell>(this.pathGraph);
+        //FindAllPaths<Cell> findAllPaths = new FindAllPaths<Cell>(this.pathGraph);
         System.err.println("traitement 2");
         Cell currentPlace = cells[myPlayer.coordinates.y][myPlayer.coordinates.x];
         for (Floor place : places) {
@@ -620,7 +845,7 @@ class Grid{
             } catch (NoSuchElementException e) {
                 System.err.println("(number="+place.getNumberOfReachableBox()+")no path for " + place.coordinates.toString());
             }
-        }
+        }*/
         return new Coordinates(0, 0);
     }
 
@@ -645,30 +870,28 @@ class Grid{
         }
     }
 
-    private GraphFindAllPaths<Cell> constructGraph(Set<Floor> places) {
-        GraphFindAllPaths<Cell> graphFindAllPaths = new GraphFindAllPaths<Cell>();
+    public void init() {
+        myPlayer = players.get(myPlayerId);
 
-        for (Floor currentCell : places) {
-            graphFindAllPaths.addNode(currentCell);
+        Set<Floor> places = new TreeSet<Floor>();
 
-            Cell right = currentCell.rightCell(cells);
-            Cell left = currentCell.leftCell(cells);
-            Cell up = currentCell.upCell(cells);
-            Cell down = currentCell.downCell(cells);
-
-            addEdgeToCurrentCell(graphFindAllPaths, currentCell, right);
-            addEdgeToCurrentCell(graphFindAllPaths, currentCell, left);
-            addEdgeToCurrentCell(graphFindAllPaths, currentCell, up);
-            addEdgeToCurrentCell(graphFindAllPaths, currentCell, down);
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                if (cells[y][x] instanceof Floor) {
+                    //setNumberOfReachableBox(y, x);
+                    places.add((Floor) cells[y][x]);
+                }
+            }
         }
+        this.pathGraph = GraphMaker.constructGraph(places, this.cells);
 
-        return graphFindAllPaths;
-    }
+        ReachabilityCalculator<Floor> reachabilityCalculator = new ReachabilityCalculator<Floor>(this.pathGraph);
+        reachabilityCalculator.setReachableCases((Floor) this.cells[myPlayer.coordinates.y][myPlayer.coordinates.x]);
 
-    private void addEdgeToCurrentCell(final GraphFindAllPaths<Cell> graphFindAllPaths, Cell currentCell, Cell destination) {
-        if (destination != null && destination.isFreePlace()) {
-            graphFindAllPaths.addNode(destination);
-            graphFindAllPaths.addEdge(currentCell, destination, 1);
+        Iterator<Floor> iterator = places.iterator();
+        while (iterator.hasNext()) {
+            Floor floor = iterator.next();
+            if (!floor.isReachable()) places.remove(floor);
         }
     }
 }
@@ -711,6 +934,9 @@ class Player {
             // To debug: System.err.println("Debug messages...");
 
             //System.out.println("BOMB 6 5 Amiral");
+
+            grid.init();
+
             System.out.println(grid.doAction());
             grid.nextRound();
         }
@@ -719,43 +945,84 @@ class Player {
 
 
 
+
+
 /**
  * Created by Mohamed BELMAHI on 26/09/2016.
  */
 class AttackStrategy extends Strategy {
+    @Override
+    public List<Action> makeActions(List<Action> actions) {
+        return null;
+    }
 }
+
+
 
 
 /**
  * Created by Mohamed BELMAHI on 26/09/2016.
  */
 class BeCarfulStrategy extends Strategy {
+    @Override
+    public List<Action> makeActions(List<Action> actions) {
+        return null;
+    }
 }
+
+
 
 
 /**
  * Created by Mohamed BELMAHI on 26/09/2016.
  */
 class DestroyStrategy extends Strategy {
+    @Override
+    public List<Action> makeActions(List<Action> actions) {
+        return null;
+    }
 }
+
+
 
 
 /**
  * Created by Mohamed BELMAHI on 26/09/2016.
  */
 class EatingStrategy extends Strategy {
+
+    List<Item> items;
+
+    public EatingStrategy(List<Item> items) {
+        this.items = items;
+    }
+
+    @Override
+    public List<Action> makeActions(List<Action> actions) {
+        return null;
+    }
 }
+
+
 
 
 /**
  * Created by Mohamed BELMAHI on 26/09/2016.
  */
 class EscapeStrategy extends Strategy {
+    public List<Action> makeActions(List<Action> actions) {
+        return null;
+    }
 }
+
+
 
 
 /**
  * Created by Mohamed BELMAHI on 26/09/2016.
  */
 abstract class Strategy {
+
+    public abstract List<Action> makeActions(List<Action> actions);
+
 }
