@@ -53,16 +53,13 @@ public class FindOptimalPath<T extends Floor> {
         
         final LinkedList<Direction> directions = current.getDirections(destination);
         
-        for (final Direction direction : directions) {
-            
-            System.out.println(direction.toString());
-        }
-        System.out.println("-------------------------------------");
         
         for (final Direction direction : directions) {
             for (final Map.Entry<T, Direction> entry : edges.entrySet()) {
                 if (direction.equals(entry.getValue())) {
-                    path.add(entry.getKey());
+                    if (entry.getKey() != destination) {
+                        path.add(entry.getKey());
+                    }
                     final List<T> recursivePath = recursive(entry.getKey(), destination);
                     if (!recursivePath.isEmpty() && recursivePath.get(recursivePath.size() - 1) == destination) {
                         path.addAll(recursivePath);
@@ -70,6 +67,10 @@ public class FindOptimalPath<T extends Floor> {
                     }
                 }
             }
+        }
+    
+        if (!path.isEmpty() && path.get(path.size() - 1) != destination) {
+            return new ArrayList<>();
         }
         
         return path;
@@ -85,6 +86,7 @@ public class FindOptimalPath<T extends Floor> {
         final Floor next4 = new Floor(0, 4);
         final Floor next5 = new Floor(0, 5);
         final Floor next6 = new Floor(0, 6);
+        final Floor next62 = new Floor(2, 6);
         
         graph.addNode(here);
         
@@ -94,6 +96,7 @@ public class FindOptimalPath<T extends Floor> {
         graph.addNode(next4);
         graph.addNode(next5);
         graph.addNode(next6);
+        graph.addNode(next62);
         
         graph.addEdge(here, next1, Direction.DOWN);
         graph.addEdge(next1, next2, Direction.DOWN);
@@ -108,8 +111,8 @@ public class FindOptimalPath<T extends Floor> {
         graph.addEdge(next5, next51, Direction.RIGHT);
         
         final FindOptimalPath<Floor> findOptimalPath = new FindOptimalPath<>(graph);
-        
-        final List<Floor> optimalPath = findOptimalPath.getOptimalPath(here, next51);
+    
+        final List<Floor> optimalPath = findOptimalPath.getOptimalPath(here, next6);
         
         for (final Floor floor : optimalPath) {
             System.out.println(floor.coordinates.toString());
