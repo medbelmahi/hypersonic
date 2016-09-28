@@ -11,8 +11,8 @@ public class Floor extends Cell implements Comparable<Floor>{
 
     private int numberOfReachableBox;
     private boolean isReachable;
-
-    Floor(int x, int y) {
+    
+    public Floor(final int x, final int y) {
         super(x, y);
     }
 
@@ -23,27 +23,27 @@ public class Floor extends Cell implements Comparable<Floor>{
     public int value() {
         return 0;
     }
-
-    public void setNumberOfReachableBox(int numberOfReachableBox) {
+    
+    public void setNumberOfReachableBox(final int numberOfReachableBox) {
         this.numberOfReachableBox = numberOfReachableBox;
     }
     public int getNumberOfReachableBox() {
         return this.numberOfReachableBox;
     }
-
-    public int compareTo(Floor o) {
+    
+    public int compareTo(final Floor o) {
         return this.numberOfReachableBox < o.numberOfReachableBox ? 1 : -1;
     }
 
     public boolean isReachable() {
         return isReachable;
     }
-
-    public void setReachable(boolean reachable) {
+    
+    public void setReachable(final boolean reachable) {
         isReachable = reachable;
     }
-
-    public <T extends Floor> LinkedList<Direction> getDirections(T destination) {
+    
+    public <T extends Floor> LinkedList<Direction> getDirections(final T destination) {
         return this.coordinates.getSortedDirection(destination.coordinates);
     }
 }

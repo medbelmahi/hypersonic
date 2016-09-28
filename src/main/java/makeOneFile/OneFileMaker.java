@@ -2,39 +2,39 @@ package makeOneFile;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-
+import java.util.*;
 
 /**
  * Created by Mohamed BELMAHI on 25/09/2016.
  */
 public class OneFileMaker {
-
-    public static final String PLAYER_FILE_PATH = "C:\\Users\\MedBelmahi\\Desktop\\hypersonic\\hypersonic\\src\\main\\java\\playerFile\\Player.java";
-    public static final String PACKAGE_PATH = "C:\\Users\\MedBelmahi\\Desktop\\hypersonic\\hypersonic\\src\\main\\java\\hypersonic";
-
-    public static void main(String[] args) {
+    
+    public static final String PLAYER_FILE_PATH = "C:\\Users\\sqli-user\\Desktop\\Dossier\\javaTest\\hypersonic\\src\\main\\java\\playerFile\\Player.java";
+    public static final String PACKAGE_PATH = "C:\\Users\\sqli-user\\Desktop\\Dossier\\javaTest\\hypersonic\\src\\main\\java\\hypersonic";
+    public static final int UPDATE_RANGE = 10000; //milliseconds
+    
+    public static void main(final String[] args) {
         while (true) {
-            File hyperSonicPackage = new File(PACKAGE_PATH);
+            System.out.println("Starting --> " + new Date());
+            final File hyperSonicPackage = new File(PACKAGE_PATH);
 
             String content = filesContent(hyperSonicPackage);
-
-            //System.out.println(content);
 
             content = "import java.util.*;\n" + content;
 
             makePlayerFile(content);
-
+    
             try {
-                Thread.sleep(10000);
-            } catch (InterruptedException e) {
+                Thread.sleep(UPDATE_RANGE);
+            } catch (final InterruptedException e) {
                 e.printStackTrace();
             }
         }
 
     }
-
-    private static void makePlayerFile(String content) {
-        File file = new File(PLAYER_FILE_PATH);
+    
+    private static void makePlayerFile(final String content) {
+        final File file = new File(PLAYER_FILE_PATH);
 
         try (FileOutputStream fop = new FileOutputStream(file)) {
 
@@ -44,27 +44,26 @@ public class OneFileMaker {
             }
 
             // get the content in bytes
-            byte[] contentInBytes = content.getBytes(StandardCharsets.UTF_8);
+            final byte[] contentInBytes = content.getBytes(StandardCharsets.UTF_8);
 
             fop.write(contentInBytes);
             fop.flush();
             fop.close();
 
             System.out.println("Done");
-
-        } catch (IOException e) {
+    
+        } catch (final IOException e) {
             e.printStackTrace();
         }
     }
-
-
-    public static String filesContent(File file) {
+    
+    public static String filesContent(final File file) {
 
         String filesContent = "";
 
         if (file.isDirectory()) {
-
-            for (File f : file.listFiles()) {
+    
+            for (final File f : file.listFiles()) {
                 filesContent += "\n" + filesContent(f);
             }
 
@@ -80,19 +79,20 @@ public class OneFileMaker {
                 while ((sCurrentLine = br.readLine()) != null) {
                     if (sCurrentLine.startsWith("package") || sCurrentLine.startsWith("import")) {
                         continue;
-                    }else if (sCurrentLine.startsWith("public class") || sCurrentLine.startsWith("public abstract class")){
+                    } else if (sCurrentLine.startsWith("public class") || sCurrentLine
+                            .startsWith("public abstract class") || sCurrentLine.startsWith("public enum")) {
                         sCurrentLine = sCurrentLine.replaceFirst("public ", "");
                     }
-                    System.out.println(sCurrentLine);
+                    //System.out.println(sCurrentLine);
                     filesContent += "\n" + sCurrentLine;
                 }
-
-            } catch (IOException e) {
+    
+            } catch (final IOException e) {
                 e.printStackTrace();
             } finally {
                 try {
                     if (br != null) br.close();
-                } catch (IOException ex) {
+                } catch (final IOException ex) {
                     ex.printStackTrace();
                 }
             }
