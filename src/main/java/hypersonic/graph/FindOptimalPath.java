@@ -84,6 +84,7 @@ public class FindOptimalPath<T extends Floor> {
         final Floor next2 = new Floor(0, 2);
         final Floor next3 = new Floor(0, 3);
         final Floor next4 = new Floor(0, 4);
+        final Floor next41 = new Floor(1, 4);
         final Floor next5 = new Floor(0, 5);
         final Floor next6 = new Floor(0, 6);
         final Floor next62 = new Floor(2, 6);
@@ -97,6 +98,7 @@ public class FindOptimalPath<T extends Floor> {
         graph.addNode(next5);
         graph.addNode(next6);
         graph.addNode(next62);
+        graph.addNode(next41);
         
         graph.addEdge(here, next1, Direction.DOWN);
         graph.addEdge(next1, next2, Direction.DOWN);
@@ -104,6 +106,7 @@ public class FindOptimalPath<T extends Floor> {
         graph.addEdge(next3, next4, Direction.DOWN);
         graph.addEdge(next4, next5, Direction.DOWN);
         graph.addEdge(next5, next6, Direction.DOWN);
+        graph.addEdge(next4, next41, Direction.RIGHT);
         
         //
         final Floor next51 = new Floor(1, 5);
@@ -112,7 +115,7 @@ public class FindOptimalPath<T extends Floor> {
         
         final FindOptimalPath<Floor> findOptimalPath = new FindOptimalPath<>(graph);
     
-        final List<Floor> optimalPath = findOptimalPath.getOptimalPath(here, next6);
+        final List<Floor> optimalPath = findOptimalPath.getOptimalPath(here, next41);
         
         for (final Floor floor : optimalPath) {
             System.out.println(floor.coordinates.toString());
