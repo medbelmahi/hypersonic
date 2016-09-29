@@ -11,4 +11,9 @@ public class EscapeStrategy extends Strategy {
     public List<Action> makeActions(List<Action> actions) {
         return null;
     }
+
+
+
+
+
 }
