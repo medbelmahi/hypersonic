@@ -5,17 +5,19 @@ import hypersonic.cell.Cell;
 import hypersonic.cell.Floor;
 import hypersonic.entity.BomberMan;
 
-import java.util.Set;
+import java.util.*;
 
 /**
  * Created by Mohamed BELMAHI on 26/09/2016.
  */
-public class ReachabilityCalculator<T extends Floor> {
+public class ReachableCalculator<T extends Floor> {
     private final GraphFindAllPaths<T> graph;
-    private Cell[][] cells;
-    private BomberMan myPlayer;
-
-    public ReachabilityCalculator(GraphFindAllPaths<T> graph, Cell[][] cells, BomberMan myPlayer) {
+    private final Cell[][] cells;
+    private final BomberMan myPlayer;
+    
+    private final TreeSet<Floor> sortedFloor = new TreeSet<>();
+    
+    public ReachableCalculator(final GraphFindAllPaths<T> graph, final Cell[][] cells, final BomberMan myPlayer) {
         this.cells = cells;
         this.myPlayer = myPlayer;
         if (graph == null) {
@@ -23,30 +25,30 @@ public class ReachabilityCalculator<T extends Floor> {
         }
         this.graph = graph;
     }
-
-    public void setReachableCases(T currentNode) {
+    
+    public void setReachableCases(final T currentNode) {
         currentNode.setReachable(true);
         setNumberOfReachableBox(currentNode);
-
+        sortedFloor.add(currentNode);
+        
         final Set<T> edges  = graph.edgesFrom(currentNode).keySet();
-
-        for (T t : edges) {
+        
+        for (final T t : edges) {
             if (!t.isReachable()) {
                 setReachableCases(t);
             }
         }
     }
-
-
-    private void setNumberOfReachableBox(T place) {
-
-        int yy = place.coordinates.y;
-        int xx = place.coordinates.x;
-
-        int yStart = myPlayer.rangeStartY(yy);
-        int yEnd = myPlayer.rangeEndY(yy, Grid.DEFAULT_HEIGHT);
-        int xStart = myPlayer.rangeStartX(xx);
-        int xEnd = myPlayer.rangeEndX(xx, Grid.DEFAULT_WIDTH);
+    
+    private void setNumberOfReachableBox(final T place) {
+        
+        final int yy = place.coordinates.y;
+        final int xx = place.coordinates.x;
+        
+        final int yStart = myPlayer.rangeStartY(yy);
+        final int yEnd = myPlayer.rangeEndY(yy, Grid.DEFAULT_HEIGHT);
+        final int xStart = myPlayer.rangeStartX(xx);
+        final int xEnd = myPlayer.rangeEndX(xx, Grid.DEFAULT_WIDTH);
 
         int numberOfBoxes = 0;
 

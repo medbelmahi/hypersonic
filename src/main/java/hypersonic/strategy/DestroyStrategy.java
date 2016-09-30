@@ -2,16 +2,18 @@ package hypersonic.strategy;
 
 import hypersonic.Action;
 
-import java.util.List;
+import hypersonic.cell.*;
+import java.util.*;
 
 /**
  * Created by Mohamed BELMAHI on 26/09/2016.
  */
 public class DestroyStrategy extends Strategy {
-    @Override
-    public List<Action> makeActions(List<Action> actions) {
+    @Override public List<Action> makeActions(final List<Action> actions) {
         return null;
     }
-
-    public static boole
+    
+    public static Floor getBestReachablePlace(final TreeSet<Floor> places) {
+        return null;
+    }
 }

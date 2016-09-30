@@ -8,12 +8,11 @@ import java.util.*;
 class Action {
     public static final String MOVE = "MOVE";
     public static final String BOMB = "BOMB";
-
-    private String actionType;
-    private Coordinates coordinates;
-
-
-    public Action(String actionType, Coordinates coordinates) {
+    
+    private final String actionType;
+    private final Coordinates coordinates;
+    
+    public Action(final String actionType, final Coordinates coordinates) {
         this.actionType = actionType;
         this.coordinates = coordinates;
     }
@@ -30,8 +29,8 @@ class Action {
  * Created by Mohamed BELMAHI on 25/09/2016.
  */
 class Box extends Cell {
-
-    Box(int x, int y) {
+    
+    Box(final int x, final int y) {
         super(x, y);
     }
 
@@ -57,28 +56,28 @@ abstract class Cell{
     public static final int EXTRA_BOMB_BOX_TYPE = '2';
 
     public Coordinates coordinates;
-
-    Cell(int x, int y) {
+    
+    Cell(final int x, final int y) {
         coordinates = new Coordinates(x, y);
     }
 
     public abstract boolean isFreePlace();
 
     public abstract int value();
-
-    public Cell rightCell(Cell[][] cells) {
+    
+    public Cell rightCell(final Cell[][] cells) {
         return coordinates.x + 1 < Grid.DEFAULT_WIDTH ? cells[coordinates.y][coordinates.x + 1] : null;
     }
-
-    public Cell leftCell(Cell[][] cells) {
+    
+    public Cell leftCell(final Cell[][] cells) {
         return coordinates.x - 1 >= 0 ? cells[coordinates.y][coordinates.x - 1] : null;
     }
-
-    public Cell upCell(Cell[][] cells) {
+    
+    public Cell upCell(final Cell[][] cells) {
         return coordinates.y - 1 >= 0 ? cells[coordinates.y - 1][coordinates.x] : null;
     }
-
-    public Cell downCell(Cell[][] cells) {
+    
+    public Cell downCell(final Cell[][] cells) {
         return coordinates.y + 1 < Grid.DEFAULT_HEIGHT ? cells[coordinates.y + 1][coordinates.x] : null;
     }
 }
@@ -88,10 +87,10 @@ abstract class Cell{
  * Created by Mohamed BELMAHI on 25/09/2016.
  */
 class CellFactory {
-    public static Cell[] constructRow(int y, String inputRow){
-        int length = inputRow.length();
-
-        Cell[] row = new Cell[length];
+    public static Cell[] constructRow(final int y, final String inputRow) {
+        final int length = inputRow.length();
+        
+        final Cell[] row = new Cell[length];
 
         for (int x = 0; x < length; x++) {
             row[x] = constructCell(x, y, inputRow.charAt(x));
@@ -99,8 +98,8 @@ class CellFactory {
 
         return row;
     }
-
-    private static Cell constructCell(int x, int y, char type){
+    
+    private static Cell constructCell(final int x, final int y, final char type) {
         switch (type){
             case Cell.FLOOR_TYPE :
                 return new Floor(x, y);
@@ -123,8 +122,8 @@ class CellFactory {
  * Created by Mohamed BELMAHI on 25/09/2016.
  */
 class ExtraBombBox extends Box {
-
-    ExtraBombBox(int x, int y) {
+    
+    ExtraBombBox(final int x, final int y) {
         super(x, y);
     }
 }
@@ -134,7 +133,7 @@ class ExtraBombBox extends Box {
  * Created by Mohamed BELMAHI on 25/09/2016.
  */
 class ExtraRangeBox extends Box {
-    ExtraRangeBox(int x, int y) {
+    ExtraRangeBox(final int x, final int y) {
         super(x, y);
     }
 }
@@ -191,8 +190,8 @@ class Floor extends Cell implements Comparable<Floor>{
  * Created by Mohamed BELMAHI on 25/09/2016.
  */
 class Wall extends Cell {
-
-    Wall(int x, int y) {
+    
+    Wall(final int x, final int y) {
         super(x, y);
     }
 
@@ -214,8 +213,8 @@ class Wall extends Cell {
 class Coordinates {
     public int x;
     public int y;
-
-    public Coordinates(int x, int y) {
+    
+    public Coordinates(final int x, final int y) {
         this.y = y;
         this.x = x;
     }
@@ -224,16 +223,15 @@ class Coordinates {
     public String toString() {
         return x + " " + y;
     }
-
-    @Override
-    public boolean equals(Object obj) {
-        Coordinates other = (Coordinates) obj;
+    
+    @Override public boolean equals(final Object obj) {
+        final Coordinates other = (Coordinates) obj;
         return this.x == other.x && this.y == other.y;
     }
-
-    public LinkedList<Direction> getSortedDirection(Coordinates destination) {
-
-        LinkedList<Direction> directions = new LinkedList<>();
+    
+    public LinkedList<Direction> getSortedDirection(final Coordinates destination) {
+        
+        final LinkedList<Direction> directions = new LinkedList<>();
 
         if (this.y == destination.y) {
             if (this.x < destination.x) {
@@ -260,8 +258,8 @@ class Coordinates {
                 directions.add(Direction.DOWN);
             }
         } else if (this.x < destination.x && this.y < destination.y) {
-            int diffX = destination.x - this.x;
-            int diffY = destination.y - this.y;
+            final int diffX = destination.x - this.x;
+            final int diffY = destination.y - this.y;
 
             if (diffX < diffY) {
                 directions.add(Direction.DOWN);
@@ -275,8 +273,8 @@ class Coordinates {
                 directions.add(Direction.UP);
             }
         }else if (this.x > destination.x && this.y > destination.y) {
-            int diffX = destination.x - this.x;
-            int diffY = destination.y - this.y;
+            final int diffX = destination.x - this.x;
+            final int diffY = destination.y - this.y;
 
             if (diffX < diffY) {
                 directions.add(Direction.LEFT);
@@ -312,17 +310,16 @@ class Coordinates {
  * Created by Mohamed BELMAHI on 25/09/2016.
  */
 class Bomb extends Entity {
-    private Timer timer;
-    private BomberMan owner;
-
-
-    public Bomb(BomberMan owner, int x, int y, int countDown, int range) {
+    private final Timer timer;
+    private final BomberMan owner;
+    
+    public Bomb(final BomberMan owner, final int x, final int y, final int countDown, final int range) {
         super(x, y, range);
         this.owner = owner;
         this.timer = new Timer(Timer.DEFAULT_DECREASED_TIME, countDown);
     }
-
-    public boolean isHisOwner(BomberMan bomberMan) {
+    
+    public boolean isHisOwner(final BomberMan bomberMan) {
         return bomberMan.equals(owner);
     }
 }
@@ -333,10 +330,10 @@ class Bomb extends Entity {
  * Created by Mohamed BELMAHI on 25/09/2016.
  */
 class BomberMan extends Entity {
-    private int id;
-    private int bombsCount;
-
-    public BomberMan(int id, int x, int y, int bombsCount, int range) {
+    private final int id;
+    private final int bombsCount;
+    
+    public BomberMan(final int id, final int x, final int y, final int bombsCount, final int range) {
         super(x, y, range);
         this.id = id;
         this.bombsCount = bombsCount;
@@ -367,30 +364,29 @@ abstract class Entity {
     protected int explosionRange;
 
     public Coordinates coordinates;
-
-
-    public Entity(int x, int y, int explosionRange) {
+    
+    public Entity(final int x, final int y, final int explosionRange) {
         this.coordinates = new Coordinates(x, y);
         this.explosionRange = explosionRange;
     }
-
-    public int rangeStartY(int y) {
-        int startY = y - (explosionRange - 1);
+    
+    public int rangeStartY(final int y) {
+        final int startY = y - (explosionRange - 1);
         return startY < 0 ? 0 : startY;
     }
-
-    public int rangeStartX(int x) {
-        int startX = x - (explosionRange - 1);
+    
+    public int rangeStartX(final int x) {
+        final int startX = x - (explosionRange - 1);
         return startX < 0 ? 0 : startX;
     }
-
-    public int rangeEndY(int y, int height) {
-        int endY = y + ((explosionRange - 1));
+    
+    public int rangeEndY(final int y, final int height) {
+        final int endY = y + ((explosionRange - 1));
         return endY < height ? endY : (height - 1);
     }
-
-    public int rangeEndX(int x, int width) {
-        int endX = x + ((explosionRange - 1));
+    
+    public int rangeEndX(final int x, final int width) {
+        final int endX = x + ((explosionRange - 1));
         return endX < width ? endX : (width - 1);
     }
 }
@@ -400,8 +396,9 @@ abstract class Entity {
  * Created by Mohamed BELMAHI on 25/09/2016.
  */
 class Item extends Entity {
-    private int id;
-    public Item(int owner, int x, int y, int id, int explosionRange) {
+    private final int id;
+    
+    public Item(final int owner, final int x, final int y, final int id, final int explosionRange) {
         super(x, y, explosionRange);
         this.id = id;
     }
@@ -416,8 +413,8 @@ class Timer{
     public static final int DEFAULT_DECREASED_TIME = 1;
     int decreasedTime;
     int countDown;
-
-    public Timer(int decreasedTime, int countDown) {
+    
+    public Timer(final int decreasedTime, final int countDown) {
         this.decreasedTime = decreasedTime;
         this.countDown = countDown;
     }
@@ -436,14 +433,14 @@ class FindAllPaths<T extends Floor> {
     /**
      * Takes in a graph. This graph should not be changed by the client
      */
-    public FindAllPaths(GraphFindAllPaths<T> graph) {
+    public FindAllPaths(final GraphFindAllPaths<T> graph) {
         if (graph == null) {
             throw new NullPointerException("The input graph cannot be null.");
         }
         this.graph = graph;
     }
-
-    private void validate (T source, T destination) {
+    
+    private void validate(final T source, final T destination) {
 
         if (source == null) {
             throw new NullPointerException("The source: " + source + " cannot be  null.");
@@ -463,16 +460,17 @@ class FindAllPaths<T extends Floor> {
      * @param destination       the destination node
      * @return                  List of all paths
      */
-    public List<List<T>> getAllPaths(T source, T destination) {
+    public List<List<T>> getAllPaths(final T source, final T destination) {
         validate(source, destination);
-
-        List<List<T>> paths = new ArrayList<List<T>>();
+    
+        final List<List<T>> paths = new ArrayList<List<T>>();
         recursive(source, destination, paths, new LinkedHashSet<T>());
         return paths;
     }
 
     // so far this dude ignore's cycles.
-    private void recursive (T current, T destination, List<List<T>> paths, LinkedHashSet<T> path) {
+    private void recursive(final T current, final T destination, final List<List<T>> paths,
+            final LinkedHashSet<T> path) {
         if (!paths.isEmpty()) {
             return;
         }
@@ -485,8 +483,8 @@ class FindAllPaths<T extends Floor> {
         }
 
         final Set<T> edges  = graph.edgesFrom(current).keySet();
-
-        for (T t : edges) {
+    
+        for (final T t : edges) {
             if (!path.contains(t)) {
                 recursive (t, destination, paths, path);
             }
@@ -577,26 +575,25 @@ class FindOptimalPath<T extends Floor> {
         
         return path;
     }
-
-
-    public Map<T, Integer> getPlacesWithDistance(T currentPlace){
-        Map<T, Integer> places = new HashMap<T, Integer>();
+    
+    public Map<T, Integer> getPlacesWithDistance(final T currentPlace) {
+        final Map<T, Integer> places = new HashMap<T, Integer>();
 
         final Map<T, Direction> edges  = graph.edgesFrom(currentPlace);
-
-        for (Map.Entry<T, Direction> entry : edges.entrySet()) {
+        
+        for (final Map.Entry<T, Direction> entry : edges.entrySet()) {
             recursivePlacesWithDistance(places, currentPlace, entry.getKey());
         }
 
         return places;
     }
-
-    private void recursivePlacesWithDistance(Map<T, Integer> places, T currentPlace, T destination) {
+    
+    private void recursivePlacesWithDistance(final Map<T, Integer> places, final T currentPlace, final T destination) {
         places.put(destination, getOptimalPath(currentPlace, destination).size());
 
         final Map<T, Direction> edges  = graph.edgesFrom(destination);
-
-        for (Map.Entry<T, Direction> entry : edges.entrySet()) {
+        
+        for (final Map.Entry<T, Direction> entry : edges.entrySet()) {
             recursivePlacesWithDistance(places, currentPlace, entry.getKey());
         }
     }
@@ -672,7 +669,7 @@ class GraphFindAllPaths<T extends Floor> implements Iterable<T> {
      * @param node  Adds to a graph. If node is null then this is a no-op.
      * @return      true if node is added, false otherwise.
      */
-    public boolean addNode(T node) {
+    public boolean addNode(final T node) {
         if (node == null) {
             throw new NullPointerException("The input node cannot be null.");
         }
@@ -693,7 +690,7 @@ class GraphFindAllPaths<T extends Floor> implements Iterable<T> {
      * @throws NullPointerException     if source or destination is null.
      * @throws NoSuchElementException   if either source of destination does not exists.
      */
-    public void addEdge (T source, T destination, Direction direction) {
+    public void addEdge(final T source, final T destination, final Direction direction) {
         if (source == null || destination == null) {
             throw new NullPointerException("Source and Destination, both should be non-null.");
         }
@@ -712,7 +709,7 @@ class GraphFindAllPaths<T extends Floor> implements Iterable<T> {
      * @throws NullPointerException     if either source or destination specified is null
      * @throws NoSuchElementException   if graph does not contain either source or destination
      */
-    public void removeEdge (T source, T destination) {
+    public void removeEdge(final T source, final T destination) {
         if (source == null || destination == null) {
             throw new NullPointerException("Source and Destination, both should be non-null.");
         }
@@ -731,11 +728,11 @@ class GraphFindAllPaths<T extends Floor> implements Iterable<T> {
      * @throws NullPointerException   If input node is null.
      * @throws NoSuchElementException If node is not in graph.
      */
-    public Map<T, Direction> edgesFrom(T node) {
+    public Map<T, Direction> edgesFrom(final T node) {
         if (node == null) {
             throw new NullPointerException("The node should not be null.");
         }
-        Map<T, Direction> edges = graph.get(node);
+        final Map<T, Direction> edges = graph.get(node);
         if (edges == null) {
             throw new NoSuchElementException("Source node does not exist.");
         }
@@ -759,17 +756,17 @@ class GraphFindAllPaths<T extends Floor> implements Iterable<T> {
  * Created by Mohamed BELMAHI on 26/09/2016.
  */
 class GraphMaker {
-
-    public static GraphFindAllPaths<Floor> constructGraph(Set<Floor> places, Cell[][] cells) {
-        GraphFindAllPaths<Floor> graphFindAllPaths = new GraphFindAllPaths<Floor>();
-
-        for (Floor currentCell : places) {
+    
+    public static GraphFindAllPaths<Floor> constructGraph(final Set<Floor> places, final Cell[][] cells) {
+        final GraphFindAllPaths<Floor> graphFindAllPaths = new GraphFindAllPaths<Floor>();
+        
+        for (final Floor currentCell : places) {
             graphFindAllPaths.addNode(currentCell);
-
-            Cell right = currentCell.rightCell(cells);
-            Cell left = currentCell.leftCell(cells);
-            Cell up = currentCell.upCell(cells);
-            Cell down = currentCell.downCell(cells);
+            
+            final Cell right = currentCell.rightCell(cells);
+            final Cell left = currentCell.leftCell(cells);
+            final Cell up = currentCell.upCell(cells);
+            final Cell down = currentCell.downCell(cells);
 
             addEdgeToCurrentCell(graphFindAllPaths, currentCell, right, Direction.RIGHT);
             addEdgeToCurrentCell(graphFindAllPaths, currentCell, left, Direction.LEFT);
@@ -779,8 +776,9 @@ class GraphMaker {
 
         return graphFindAllPaths;
     }
-
-    public static void addEdgeToCurrentCell(final GraphFindAllPaths<Floor> graphFindAllPaths, Floor currentCell, Cell destination, Direction direction) {
+    
+    public static void addEdgeToCurrentCell(final GraphFindAllPaths<Floor> graphFindAllPaths, final Floor currentCell,
+            final Cell destination, final Direction direction) {
         if (destination != null && destination.isFreePlace()) {
             graphFindAllPaths.addNode((Floor) destination);
             graphFindAllPaths.addEdge(currentCell, (Floor) destination, direction);
@@ -796,10 +794,10 @@ class GraphMaker {
  */
 class ReachabilityCalculator<T extends Floor> {
     private final GraphFindAllPaths<T> graph;
-    private Cell[][] cells;
-    private BomberMan myPlayer;
-
-    public ReachabilityCalculator(GraphFindAllPaths<T> graph, Cell[][] cells, BomberMan myPlayer) {
+    private final Cell[][] cells;
+    private final BomberMan myPlayer;
+    
+    public ReachabilityCalculator(final GraphFindAllPaths<T> graph, final Cell[][] cells, final BomberMan myPlayer) {
         this.cells = cells;
         this.myPlayer = myPlayer;
         if (graph == null) {
@@ -807,30 +805,29 @@ class ReachabilityCalculator<T extends Floor> {
         }
         this.graph = graph;
     }
-
-    public void setReachableCases(T currentNode) {
+    
+    public void setReachableCases(final T currentNode) {
         currentNode.setReachable(true);
         setNumberOfReachableBox(currentNode);
 
         final Set<T> edges  = graph.edgesFrom(currentNode).keySet();
-
-        for (T t : edges) {
+        
+        for (final T t : edges) {
             if (!t.isReachable()) {
                 setReachableCases(t);
             }
         }
     }
-
-
-    private void setNumberOfReachableBox(T place) {
-
-        int yy = place.coordinates.y;
-        int xx = place.coordinates.x;
-
-        int yStart = myPlayer.rangeStartY(yy);
-        int yEnd = myPlayer.rangeEndY(yy, Grid.DEFAULT_HEIGHT);
-        int xStart = myPlayer.rangeStartX(xx);
-        int xEnd = myPlayer.rangeEndX(xx, Grid.DEFAULT_WIDTH);
+    
+    private void setNumberOfReachableBox(final T place) {
+        
+        final int yy = place.coordinates.y;
+        final int xx = place.coordinates.x;
+        
+        final int yStart = myPlayer.rangeStartY(yy);
+        final int yEnd = myPlayer.rangeEndY(yy, Grid.DEFAULT_HEIGHT);
+        final int xStart = myPlayer.rangeStartX(xx);
+        final int xEnd = myPlayer.rangeEndX(xx, Grid.DEFAULT_WIDTH);
 
         int numberOfBoxes = 0;
 
@@ -856,18 +853,18 @@ class Grid{
 
     public static final int DEFAULT_WIDTH = 13;
     public static final int DEFAULT_HEIGHT = 11;
-
-    private int width;
-    private int height;
-    private int myPlayerId;
-    private Cell[][] cells;
-    private List<Bomb> bombs;
-    private List<Item> items;
-    private Map<Integer, BomberMan> players;
+    
+    private final int width;
+    private final int height;
+    private final int myPlayerId;
+    private final Cell[][] cells;
+    private final List<Bomb> bombs;
+    private final List<Item> items;
+    private final Map<Integer, BomberMan> players;
     private BomberMan myPlayer;
     private GraphFindAllPaths<Floor> pathGraph;
-
-    public Grid(int width, int height, int myPlayerId){
+    
+    public Grid(final int width, final int height, final int myPlayerId) {
         this.width = width;
         this.height = height;
         this.myPlayerId = myPlayerId;
@@ -876,13 +873,13 @@ class Grid{
         this.items = new ArrayList<Item>();
         this.players = new HashMap<Integer, BomberMan>();
     }
-
-    public void addRow(int y, String row) {
+    
+    public void addRow(final int y, final String row) {
         cells[y] = CellFactory.constructRow(y, row);
     }
-
-
-    public void addEntity(int entityType, int owner, int x, int y, int param1, int param2) {
+    
+    public void addEntity(final int entityType, final int owner, final int x, final int y, final int param1,
+            final int param2) {
 
         switch (entityType) {
             case Entity.BOMBER_MAN_TYPE:
@@ -905,8 +902,8 @@ class Grid{
     }
 
     public String doAction() {
-
-        Action action = this.myPlayer.makeAction();
+    
+        final Action action = this.myPlayer.makeAction();
 
 
        /* if (!myPlayer.cantPlaceBomb()) {
@@ -968,8 +965,8 @@ class Grid{
 
     public void init() {
         myPlayer = players.get(myPlayerId);
-
-        Set<Floor> places = new TreeSet<Floor>();
+    
+        final Set<Floor> places = new TreeSet<Floor>();
 
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
@@ -980,13 +977,14 @@ class Grid{
             }
         }
         this.pathGraph = GraphMaker.constructGraph(places, this.cells);
-
-        ReachabilityCalculator<Floor> reachabilityCalculator = new ReachabilityCalculator<Floor>(this.pathGraph, cells, myPlayer);
+    
+        final ReachabilityCalculator<Floor> reachabilityCalculator = new ReachabilityCalculator<Floor>(this.pathGraph,
+                cells, myPlayer);
         reachabilityCalculator.setReachableCases((Floor) this.cells[myPlayer.coordinates.y][myPlayer.coordinates.x]);
-
-        Iterator<Floor> iterator = places.iterator();
+    
+        final Iterator<Floor> iterator = places.iterator();
         while (iterator.hasNext()) {
-            Floor floor = iterator.next();
+            final Floor floor = iterator.next();
             if (!floor.isReachable()) places.remove(floor);
         }
     }
@@ -998,30 +996,30 @@ class Grid{
  * Created by Mohamed BELMAHI on 25/09/2016.
  */
 class Player {
-
-    public static void main(String args[]) {
-        Scanner in = new Scanner(System.in);
-        int width = in.nextInt();
-        int height = in.nextInt();
-        int myId = in.nextInt();
+    
+    public static void main(final String[] args) {
+        final Scanner in = new Scanner(System.in);
+        final int width = in.nextInt();
+        final int height = in.nextInt();
+        final int myId = in.nextInt();
         in.nextLine();
-
-        Grid grid = new Grid(width, height, myId);
+        
+        final Grid grid = new Grid(width, height, myId);
 
         // game loop
         while (true) {
             for (int i = 0; i < height; i++) {
-                String row = in.nextLine();
+                final String row = in.nextLine();
                 grid.addRow(i, row);
             }
-            int entities = in.nextInt();
+            final int entities = in.nextInt();
             for (int i = 0; i < entities; i++) {
-                int entityType = in.nextInt();
-                int owner = in.nextInt();
-                int x = in.nextInt();
-                int y = in.nextInt();
-                int param1 = in.nextInt();
-                int param2 = in.nextInt();
+                final int entityType = in.nextInt();
+                final int owner = in.nextInt();
+                final int x = in.nextInt();
+                final int y = in.nextInt();
+                final int param1 = in.nextInt();
+                final int param2 = in.nextInt();
                 grid.addEntity(entityType, owner, x, y, param1, param2);
             }
             in.nextLine();
@@ -1047,8 +1045,7 @@ class Player {
  * Created by Mohamed BELMAHI on 26/09/2016.
  */
 class AttackStrategy extends Strategy {
-    @Override
-    public List<Action> makeActions(List<Action> actions) {
+    @Override public List<Action> makeActions(final List<Action> actions) {
         return null;
     }
 }
@@ -1060,27 +1057,25 @@ class AttackStrategy extends Strategy {
  * Created by Mohamed BELMAHI on 26/09/2016.
  */
 class BeCarfulStrategy extends Strategy {
-    @Override
-    public List<Action> makeActions(List<Action> actions) {
+    @Override public List<Action> makeActions(final List<Action> actions) {
         return null;
     }
-
-
-    public static boolean isSafetyPlace(Cell cell, List<Bomb> bombs) {
-        boolean isSafety = false;
-
-        for (Bomb bomb : bombs) {
+    
+    public static boolean isSafetyPlace(final Cell cell, final List<Bomb> bombs) {
+        final boolean isSafety = false;
+        
+        for (final Bomb bomb : bombs) {
             if (bomb.coordinates.x == cell.coordinates.x) {
-                int startY = bomb.rangeStartY(bomb.coordinates.y);
-                int endY = bomb.rangeEndY(bomb.coordinates.y, Grid.DEFAULT_HEIGHT);
+                final int startY = bomb.rangeStartY(bomb.coordinates.y);
+                final int endY = bomb.rangeEndY(bomb.coordinates.y, Grid.DEFAULT_HEIGHT);
 
                 if (cell.coordinates.y <= endY || cell.coordinates.y >= startY) {
                     return true;
                 }
 
             }else if (bomb.coordinates.y == cell.coordinates.y) {
-                int startX = bomb.rangeStartX(bomb.coordinates.x);
-                int endX = bomb.rangeEndX(bomb.coordinates.x, Grid.DEFAULT_HEIGHT);
+                final int startX = bomb.rangeStartX(bomb.coordinates.x);
+                final int endX = bomb.rangeEndX(bomb.coordinates.x, Grid.DEFAULT_HEIGHT);
 
                 if (cell.coordinates.x <= endX || cell.coordinates.x >= startX) {
                     return true;
@@ -1101,12 +1096,10 @@ class BeCarfulStrategy extends Strategy {
  * Created by Mohamed BELMAHI on 26/09/2016.
  */
 class DestroyStrategy extends Strategy {
-    @Override
-    public List<Action> makeActions(List<Action> actions) {
+    @Override public List<Action> makeActions(final List<Action> actions) {
         return null;
     }
-
-    public static boole
+    
 }
 
 
@@ -1118,13 +1111,12 @@ class DestroyStrategy extends Strategy {
 class EatingStrategy extends Strategy {
 
     List<Item> items;
-
-    public EatingStrategy(List<Item> items) {
+    
+    public EatingStrategy(final List<Item> items) {
         this.items = items;
     }
-
-    @Override
-    public List<Action> makeActions(List<Action> actions) {
+    
+    @Override public List<Action> makeActions(final List<Action> actions) {
         return null;
     }
 }
@@ -1142,11 +1134,12 @@ class EscapeStrategy extends Strategy {
         return null;
     }
     
-    public Floor escapeTo(FindOptimalPath<Floor> findOptimalPath, Floor currentPlace, List<Bomb> bombs) {
-
-        Map<Floor, Integer> placesWithDistance = findOptimalPath.getPlacesWithDistance(currentPlace);
-
-        for (Map.Entry<Floor, Integer> entry : placesWithDistance.entrySet()) {
+    public Floor escapeTo(final FindOptimalPath<Floor> findOptimalPath, final Floor currentPlace,
+            final List<Bomb> bombs) {
+        
+        final Map<Floor, Integer> placesWithDistance = findOptimalPath.getPlacesWithDistance(currentPlace);
+        
+        for (final Map.Entry<Floor, Integer> entry : placesWithDistance.entrySet()) {
             if (BeCarfulStrategy.isSafetyPlace(entry.getKey(), bombs)) {
                 return entry.getKey();
             }

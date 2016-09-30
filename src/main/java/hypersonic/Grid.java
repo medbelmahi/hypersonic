@@ -8,31 +8,31 @@ import hypersonic.entity.Bomb;
 import hypersonic.entity.BomberMan;
 import hypersonic.entity.Entity;
 import hypersonic.entity.Item;
-import hypersonic.graph.GraphFindAllPaths;
-import hypersonic.graph.GraphMaker;
-import hypersonic.graph.ReachabilityCalculator;
+import hypersonic.graph.*;
 
 import java.util.*;
 
 /**
  * Created by Mohamed BELMAHI on 25/09/2016.
  */
-public class Grid{
-
+public class Grid {
+    
     public static final int DEFAULT_WIDTH = 13;
     public static final int DEFAULT_HEIGHT = 11;
-
-    private int width;
-    private int height;
-    private int myPlayerId;
-    private Cell[][] cells;
-    private List<Bomb> bombs;
-    private List<Item> items;
-    private Map<Integer, BomberMan> players;
+    
+    private final int width;
+    private final int height;
+    private final int myPlayerId;
+    private final Cell[][] cells;
+    private final List<Bomb> bombs;
+    private final List<Item> items;
+    private final Map<Integer, BomberMan> players;
     private BomberMan myPlayer;
     private GraphFindAllPaths<Floor> pathGraph;
-
-    public Grid(int width, int height, int myPlayerId){
+    private FindOptimalPath<Floor> findOptimalPath;
+    private ReachableCalculator<Floor> reachableCalculator;
+    
+    public Grid(final int width, final int height, final int myPlayerId) {
         this.width = width;
         this.height = height;
         this.myPlayerId = myPlayerId;
@@ -41,37 +41,37 @@ public class Grid{
         this.items = new ArrayList<Item>();
         this.players = new HashMap<Integer, BomberMan>();
     }
-
-    public void addRow(int y, String row) {
+    
+    public void addRow(final int y, final String row) {
         cells[y] = CellFactory.constructRow(y, row);
     }
-
-
-    public void addEntity(int entityType, int owner, int x, int y, int param1, int param2) {
-
+    
+    public void addEntity(final int entityType, final int owner, final int x, final int y, final int param1,
+            final int param2) {
+        
         switch (entityType) {
-            case Entity.BOMBER_MAN_TYPE:
-                this.players.put(owner, new BomberMan(owner, x, y, param1, param2));
-                break;
-            case Entity.BOMB_TYPE:
-                this.bombs.add(new Bomb(this.players.get(owner), x, y, param1, param2));
-                break;
-            case Entity.ITEM_TYPE:
-                this.items.add(new Item(owner, x, y, param1, param2));
-                break;
-            default:
-                throw new IllegalArgumentException();
+        case Entity.BOMBER_MAN_TYPE:
+            this.players.put(owner, new BomberMan(owner, x, y, param1, param2));
+            break;
+        case Entity.BOMB_TYPE:
+            this.bombs.add(new Bomb(this.players.get(owner), x, y, param1, param2));
+            break;
+        case Entity.ITEM_TYPE:
+            this.items.add(new Item(owner, x, y, param1, param2));
+            break;
+        default:
+            throw new IllegalArgumentException();
         }
     }
-
+    
     public void nextRound() {
         this.bombs.clear();
         this.items.clear();
     }
-
+    
     public String doAction() {
-
-        Action action = this.myPlayer.makeAction();
+        
+        final Action action = this.myPlayer.makeAction();
 
 
        /* if (!myPlayer.cantPlaceBomb()) {
@@ -86,10 +86,10 @@ public class Grid{
             Coordinates bestRichPlace = bestRichPlace();
             action = new Action(Action.MOVE, bestRichPlace);
         }*/
-
+        
         return action.toString() + " " + action.toString();
     }
-
+    
     private Coordinates bestRichPlace() {
 
         /*System.err.println("first place " + places.iterator().next().coordinates.toString());
@@ -128,14 +128,12 @@ public class Grid{
         }*/
         return new Coordinates(0, 0);
     }
-
-
-
+    
     public void init() {
         myPlayer = players.get(myPlayerId);
-
-        Set<Floor> places = new TreeSet<Floor>();
-
+        
+        final Set<Floor> places = new TreeSet<Floor>();
+        
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 if (cells[y][x] instanceof Floor) {
@@ -145,14 +143,17 @@ public class Grid{
             }
         }
         this.pathGraph = GraphMaker.constructGraph(places, this.cells);
-
-        ReachabilityCalculator<Floor> reachabilityCalculator = new ReachabilityCalculator<Floor>(this.pathGraph, cells, myPlayer);
-        reachabilityCalculator.setReachableCases((Floor) this.cells[myPlayer.coordinates.y][myPlayer.coordinates.x]);
-
-        Iterator<Floor> iterator = places.iterator();
+        
+        this.reachableCalculator = new ReachableCalculator<Floor>(this.pathGraph, cells, myPlayer);
+        reachableCalculator.setReachableCases((Floor) this.cells[myPlayer.coordinates.y][myPlayer.coordinates.x]);
+        
+        final Iterator<Floor> iterator = places.iterator();
         while (iterator.hasNext()) {
-            Floor floor = iterator.next();
-            if (!floor.isReachable()) places.remove(floor);
+            final Floor floor = iterator.next();
+            if (!floor.isReachable())
+                places.remove(floor);
         }
+        
+        this.findOptimalPath = new FindOptimalPath<>(this.pathGraph);
     }
 }
