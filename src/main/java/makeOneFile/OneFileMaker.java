@@ -9,8 +9,8 @@ import java.util.*;
  */
 public class OneFileMaker {
     
-    public static final String PLAYER_FILE_PATH = "C:\\Users\\sqli-user\\Desktop\\Dossier\\javaTest\\hypersonic\\src\\main\\java\\playerFile\\Player.java";
-    public static final String PACKAGE_PATH = "C:\\Users\\sqli-user\\Desktop\\Dossier\\javaTest\\hypersonic\\src\\main\\java\\hypersonic";
+    public static final String PLAYER_FILE_PATH = "C:\\Users\\MedBelmahi\\Desktop\\hypersonic\\hypersonic\\src\\main\\java\\playerFile\\Player.java";
+    public static final String PACKAGE_PATH = "C:\\Users\\MedBelmahi\\Desktop\\hypersonic\\hypersonic\\src\\main\\java\\hypersonic";
     public static final int UPDATE_RANGE = 10000; //milliseconds
     
     public static void main(final String[] args) {

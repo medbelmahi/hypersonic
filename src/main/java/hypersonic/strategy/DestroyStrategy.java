@@ -12,4 +12,6 @@ public class DestroyStrategy extends Strategy {
     public List<Action> makeActions(List<Action> actions) {
         return null;
     }
+
+    public static boole
 }

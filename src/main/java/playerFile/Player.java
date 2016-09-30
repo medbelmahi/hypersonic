@@ -13,7 +13,7 @@ class Action {
     private Coordinates coordinates;
 
 
-    Action(String actionType, Coordinates coordinates) {
+    public Action(String actionType, Coordinates coordinates) {
         this.actionType = actionType;
         this.coordinates = coordinates;
     }
@@ -149,8 +149,8 @@ class Floor extends Cell implements Comparable<Floor>{
 
     private int numberOfReachableBox;
     private boolean isReachable;
-
-    Floor(int x, int y) {
+    
+    public Floor(final int x, final int y) {
         super(x, y);
     }
 
@@ -161,27 +161,27 @@ class Floor extends Cell implements Comparable<Floor>{
     public int value() {
         return 0;
     }
-
-    public void setNumberOfReachableBox(int numberOfReachableBox) {
+    
+    public void setNumberOfReachableBox(final int numberOfReachableBox) {
         this.numberOfReachableBox = numberOfReachableBox;
     }
     public int getNumberOfReachableBox() {
         return this.numberOfReachableBox;
     }
-
-    public int compareTo(Floor o) {
+    
+    public int compareTo(final Floor o) {
         return this.numberOfReachableBox < o.numberOfReachableBox ? 1 : -1;
     }
 
     public boolean isReachable() {
         return isReachable;
     }
-
-    public void setReachable(boolean reachable) {
+    
+    public void setReachable(final boolean reachable) {
         isReachable = reachable;
     }
-
-    public <T extends Floor> LinkedList<Direction> getDirections(T destination) {
+    
+    public <T extends Floor> LinkedList<Direction> getDirections(final T destination) {
         return this.coordinates.getSortedDirection(destination.coordinates);
     }
 }
@@ -328,6 +328,7 @@ class Bomb extends Entity {
 }
 
 
+
 /**
  * Created by Mohamed BELMAHI on 25/09/2016.
  */
@@ -346,6 +347,10 @@ class BomberMan extends Entity {
     }
 
 
+    public Action makeAction() {
+
+        return new Action(Action.MOVE, new Coordinates(0, 0));
+    }
 }
 
 
@@ -509,15 +514,16 @@ enum Direction {
 class FindOptimalPath<T extends Floor> {
 
     private final GraphFindAllPaths<T> graph;
-
-    public FindOptimalPath(GraphFindAllPaths<T> graph) {
+    public static final int PLACE_TO_ESCAPE = 10;
+    
+    public FindOptimalPath(final GraphFindAllPaths<T> graph) {
         if (graph == null) {
             throw new NullPointerException("The input graph cannot be null.");
         }
         this.graph = graph;
     }
-
-    private void validate (T source, T destination) {
+    
+    private void validate(final T source, final T destination) {
 
         if (source == null) {
             throw new NullPointerException("The source: " + source + " cannot be  null.");
@@ -529,41 +535,121 @@ class FindOptimalPath<T extends Floor> {
             throw new IllegalArgumentException("The source and destination: " + source + " cannot be the same.");
         }
     }
-
-    public List<T> getOptimalPath(T source, T destination) {
+    
+    public List<T> getOptimalPath(final T source, final T destination) {
         validate(source, destination);
-
-        List<T> path = recursive(source, destination);
+        
+        final List<T> path = recursive(source, destination);
         return path;
     }
-
-
-    private List<T> recursive(T current, T destination) {
-        List<T> path = new ArrayList<>();
-
+    
+    private List<T> recursive(final T current, final T destination) {
+        final List<T> path = new ArrayList<>();
+        
         if (current == destination) {
+            path.add(current);
             return path;
         }
-
+        
         final Map<T, Direction> edges  = graph.edgesFrom(current);
-
-
-        LinkedList<Direction> directions = current.getDirections(destination);
-
-        for (Direction direction : directions) {
-            for (Map.Entry<T, Direction> entry : edges.entrySet()) {
+        
+        final LinkedList<Direction> directions = current.getDirections(destination);
+        
+        
+        for (final Direction direction : directions) {
+            for (final Map.Entry<T, Direction> entry : edges.entrySet()) {
                 if (direction.equals(entry.getValue())) {
-                    path.add(entry.getKey());
-                    path.addAll(recursive(entry.getKey(), destination));
-                    if (path.get(path.size()-1) != destination) {
-                        path.clear();
+                    if (entry.getKey() != destination) {
+                        path.add(entry.getKey());
+                    }
+                    final List<T> recursivePath = recursive(entry.getKey(), destination);
+                    if (!recursivePath.isEmpty() && recursivePath.get(recursivePath.size() - 1) == destination) {
+                        path.addAll(recursivePath);
+                        return path;
                     }
                 }
             }
         }
-
+    
+        if (!path.isEmpty() && path.get(path.size() - 1) != destination) {
+            return new ArrayList<>();
+        }
+        
         return path;
     }
+
+
+    public Map<T, Integer> getPlacesWithDistance(T currentPlace){
+        Map<T, Integer> places = new HashMap<T, Integer>();
+
+        final Map<T, Direction> edges  = graph.edgesFrom(currentPlace);
+
+        for (Map.Entry<T, Direction> entry : edges.entrySet()) {
+            recursivePlacesWithDistance(places, currentPlace, entry.getKey());
+        }
+
+        return places;
+    }
+
+    private void recursivePlacesWithDistance(Map<T, Integer> places, T currentPlace, T destination) {
+        places.put(destination, getOptimalPath(currentPlace, destination).size());
+
+        final Map<T, Direction> edges  = graph.edgesFrom(destination);
+
+        for (Map.Entry<T, Direction> entry : edges.entrySet()) {
+            recursivePlacesWithDistance(places, currentPlace, entry.getKey());
+        }
+    }
+
+    public static void main(final String[] args) {
+        final GraphFindAllPaths<Floor> graph = new GraphFindAllPaths<>();
+        
+        final Floor here = new Floor(0, 0);
+        final Floor next1 = new Floor(0, 1);
+        final Floor next2 = new Floor(0, 2);
+        final Floor next3 = new Floor(0, 3);
+        final Floor next4 = new Floor(0, 4);
+        final Floor next41 = new Floor(1, 4);
+        final Floor next5 = new Floor(0, 5);
+        final Floor next6 = new Floor(0, 6);
+        final Floor next62 = new Floor(2, 6);
+        
+        graph.addNode(here);
+        
+        graph.addNode(next1);
+        graph.addNode(next2);
+        graph.addNode(next3);
+        graph.addNode(next4);
+        graph.addNode(next5);
+        graph.addNode(next6);
+        graph.addNode(next62);
+        graph.addNode(next41);
+        
+        graph.addEdge(here, next1, Direction.DOWN);
+        graph.addEdge(next1, next2, Direction.DOWN);
+        graph.addEdge(next2, next3, Direction.DOWN);
+        graph.addEdge(next3, next4, Direction.DOWN);
+        graph.addEdge(next4, next5, Direction.DOWN);
+        graph.addEdge(next5, next6, Direction.DOWN);
+        graph.addEdge(next4, next41, Direction.RIGHT);
+        
+        //
+        final Floor next51 = new Floor(1, 5);
+        graph.addNode(next51);
+        graph.addEdge(next5, next51, Direction.RIGHT);
+        
+        final FindOptimalPath<Floor> findOptimalPath = new FindOptimalPath<>(graph);
+    
+        final List<Floor> optimalPath = findOptimalPath.getOptimalPath(here, next41);
+        
+        for (final Floor floor : optimalPath) {
+            System.out.println(floor.coordinates.toString());
+        }
+        
+    }
+
+
+
 }
 
 
@@ -710,9 +796,12 @@ class GraphMaker {
  */
 class ReachabilityCalculator<T extends Floor> {
     private final GraphFindAllPaths<T> graph;
+    private Cell[][] cells;
+    private BomberMan myPlayer;
 
-
-    public ReachabilityCalculator(GraphFindAllPaths<T> graph) {
+    public ReachabilityCalculator(GraphFindAllPaths<T> graph, Cell[][] cells, BomberMan myPlayer) {
+        this.cells = cells;
+        this.myPlayer = myPlayer;
         if (graph == null) {
             throw new NullPointerException("The input graph cannot be null.");
         }
@@ -721,6 +810,7 @@ class ReachabilityCalculator<T extends Floor> {
 
     public void setReachableCases(T currentNode) {
         currentNode.setReachable(true);
+        setNumberOfReachableBox(currentNode);
 
         final Set<T> edges  = graph.edgesFrom(currentNode).keySet();
 
@@ -729,6 +819,29 @@ class ReachabilityCalculator<T extends Floor> {
                 setReachableCases(t);
             }
         }
+    }
+
+
+    private void setNumberOfReachableBox(T place) {
+
+        int yy = place.coordinates.y;
+        int xx = place.coordinates.x;
+
+        int yStart = myPlayer.rangeStartY(yy);
+        int yEnd = myPlayer.rangeEndY(yy, Grid.DEFAULT_HEIGHT);
+        int xStart = myPlayer.rangeStartX(xx);
+        int xEnd = myPlayer.rangeEndX(xx, Grid.DEFAULT_WIDTH);
+
+        int numberOfBoxes = 0;
+
+        for (int y = yStart; y < yEnd; y++) {
+            numberOfBoxes += cells[y][xx].value();
+        }
+        for (int x = xStart; x < xEnd; x++) {
+            numberOfBoxes += cells[yy][x].value();
+        }
+
+        place.setNumberOfReachableBox(numberOfBoxes);
     }
 }
 
@@ -792,9 +905,11 @@ class Grid{
     }
 
     public String doAction() {
-        this.myPlayer = players.get(myPlayerId);
-        Action action = null;
-        if (!myPlayer.cantPlaceBomb()) {
+
+        Action action = this.myPlayer.makeAction();
+
+
+       /* if (!myPlayer.cantPlaceBomb()) {
             Coordinates bestRichPlace = bestRichPlace();
             if (!bestRichPlace.equals(myPlayer.coordinates)) {
                 action = new Action(Action.MOVE, bestRichPlace);
@@ -805,7 +920,7 @@ class Grid{
         }else{
             Coordinates bestRichPlace = bestRichPlace();
             action = new Action(Action.MOVE, bestRichPlace);
-        }
+        }*/
 
         return action.toString() + " " + action.toString();
     }
@@ -849,26 +964,7 @@ class Grid{
         return new Coordinates(0, 0);
     }
 
-    private void setNumberOfReachableBox(int yy, int xx) {
-        if (cells[yy][xx].isFreePlace()) {
 
-            int yStart = myPlayer.rangeStartY(yy);
-            int yEnd = myPlayer.rangeEndY(yy, height);
-            int xStart = myPlayer.rangeStartX(xx);
-            int xEnd = myPlayer.rangeEndX(xx, width);
-
-            int numberOfBoxes = 0;
-
-            for (int y = yStart; y < yEnd; y++) {
-                numberOfBoxes += cells[y][xx].value();
-            }
-            for (int x = xStart; x < xEnd; x++) {
-                numberOfBoxes += cells[yy][x].value();
-            }
-
-            ((Floor) cells[yy][xx]).setNumberOfReachableBox(numberOfBoxes);
-        }
-    }
 
     public void init() {
         myPlayer = players.get(myPlayerId);
@@ -885,7 +981,7 @@ class Grid{
         }
         this.pathGraph = GraphMaker.constructGraph(places, this.cells);
 
-        ReachabilityCalculator<Floor> reachabilityCalculator = new ReachabilityCalculator<Floor>(this.pathGraph);
+        ReachabilityCalculator<Floor> reachabilityCalculator = new ReachabilityCalculator<Floor>(this.pathGraph, cells, myPlayer);
         reachabilityCalculator.setReachableCases((Floor) this.cells[myPlayer.coordinates.y][myPlayer.coordinates.x]);
 
         Iterator<Floor> iterator = places.iterator();
@@ -968,6 +1064,34 @@ class BeCarfulStrategy extends Strategy {
     public List<Action> makeActions(List<Action> actions) {
         return null;
     }
+
+
+    public static boolean isSafetyPlace(Cell cell, List<Bomb> bombs) {
+        boolean isSafety = false;
+
+        for (Bomb bomb : bombs) {
+            if (bomb.coordinates.x == cell.coordinates.x) {
+                int startY = bomb.rangeStartY(bomb.coordinates.y);
+                int endY = bomb.rangeEndY(bomb.coordinates.y, Grid.DEFAULT_HEIGHT);
+
+                if (cell.coordinates.y <= endY || cell.coordinates.y >= startY) {
+                    return true;
+                }
+
+            }else if (bomb.coordinates.y == cell.coordinates.y) {
+                int startX = bomb.rangeStartX(bomb.coordinates.x);
+                int endX = bomb.rangeEndX(bomb.coordinates.x, Grid.DEFAULT_HEIGHT);
+
+                if (cell.coordinates.x <= endX || cell.coordinates.x >= startX) {
+                    return true;
+                }
+            }
+        }
+
+        return isSafety;
+    }
+
+
 }
 
 
@@ -981,6 +1105,8 @@ class DestroyStrategy extends Strategy {
     public List<Action> makeActions(List<Action> actions) {
         return null;
     }
+
+    public static boole
 }
 
 
@@ -1010,9 +1136,26 @@ class EatingStrategy extends Strategy {
  * Created by Mohamed BELMAHI on 26/09/2016.
  */
 class EscapeStrategy extends Strategy {
-    public List<Action> makeActions(List<Action> actions) {
+
+
+    public List<Action> makeActions(final List<Action> actions) {
         return null;
     }
+    
+    public Floor escapeTo(FindOptimalPath<Floor> findOptimalPath, Floor currentPlace, List<Bomb> bombs) {
+
+        Map<Floor, Integer> placesWithDistance = findOptimalPath.getPlacesWithDistance(currentPlace);
+
+        for (Map.Entry<Floor, Integer> entry : placesWithDistance.entrySet()) {
+            if (BeCarfulStrategy.isSafetyPlace(entry.getKey(), bombs)) {
+                return entry.getKey();
+            }
+        }
+
+        return null;
+    }
+
+
 }
 
 

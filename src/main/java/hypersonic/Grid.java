@@ -70,9 +70,11 @@ public class Grid{
     }
 
     public String doAction() {
-        this.myPlayer = players.get(myPlayerId);
-        Action action = null;
-        if (!myPlayer.cantPlaceBomb()) {
+
+        Action action = this.myPlayer.makeAction();
+
+
+       /* if (!myPlayer.cantPlaceBomb()) {
             Coordinates bestRichPlace = bestRichPlace();
             if (!bestRichPlace.equals(myPlayer.coordinates)) {
                 action = new Action(Action.MOVE, bestRichPlace);
@@ -83,7 +85,7 @@ public class Grid{
         }else{
             Coordinates bestRichPlace = bestRichPlace();
             action = new Action(Action.MOVE, bestRichPlace);
-        }
+        }*/
 
         return action.toString() + " " + action.toString();
     }
@@ -127,26 +129,7 @@ public class Grid{
         return new Coordinates(0, 0);
     }
 
-    private void setNumberOfReachableBox(int yy, int xx) {
-        if (cells[yy][xx].isFreePlace()) {
 
-            int yStart = myPlayer.rangeStartY(yy);
-            int yEnd = myPlayer.rangeEndY(yy, height);
-            int xStart = myPlayer.rangeStartX(xx);
-            int xEnd = myPlayer.rangeEndX(xx, width);
-
-            int numberOfBoxes = 0;
-
-            for (int y = yStart; y < yEnd; y++) {
-                numberOfBoxes += cells[y][xx].value();
-            }
-            for (int x = xStart; x < xEnd; x++) {
-                numberOfBoxes += cells[yy][x].value();
-            }
-
-            ((Floor) cells[yy][xx]).setNumberOfReachableBox(numberOfBoxes);
-        }
-    }
 
     public void init() {
         myPlayer = players.get(myPlayerId);
@@ -163,7 +146,7 @@ public class Grid{
         }
         this.pathGraph = GraphMaker.constructGraph(places, this.cells);
 
-        ReachabilityCalculator<Floor> reachabilityCalculator = new ReachabilityCalculator<Floor>(this.pathGraph);
+        ReachabilityCalculator<Floor> reachabilityCalculator = new ReachabilityCalculator<Floor>(this.pathGraph, cells, myPlayer);
         reachabilityCalculator.setReachableCases((Floor) this.cells[myPlayer.coordinates.y][myPlayer.coordinates.x]);
 
         Iterator<Floor> iterator = places.iterator();

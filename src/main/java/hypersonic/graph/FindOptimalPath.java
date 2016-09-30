@@ -2,10 +2,7 @@ package hypersonic.graph;
 
 import hypersonic.cell.Floor;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by Mohamed BELMAHI on 27/09/2016.
@@ -13,6 +10,7 @@ import java.util.Map;
 public class FindOptimalPath<T extends Floor> {
 
     private final GraphFindAllPaths<T> graph;
+    public static final int PLACE_TO_ESCAPE = 10;
     
     public FindOptimalPath(final GraphFindAllPaths<T> graph) {
         if (graph == null) {
@@ -75,7 +73,30 @@ public class FindOptimalPath<T extends Floor> {
         
         return path;
     }
-    
+
+
+    public Map<T, Integer> getPlacesWithDistance(T currentPlace){
+        Map<T, Integer> places = new HashMap<T, Integer>();
+
+        final Map<T, Direction> edges  = graph.edgesFrom(currentPlace);
+
+        for (Map.Entry<T, Direction> entry : edges.entrySet()) {
+            recursivePlacesWithDistance(places, currentPlace, entry.getKey());
+        }
+
+        return places;
+    }
+
+    private void recursivePlacesWithDistance(Map<T, Integer> places, T currentPlace, T destination) {
+        places.put(destination, getOptimalPath(currentPlace, destination).size());
+
+        final Map<T, Direction> edges  = graph.edgesFrom(destination);
+
+        for (Map.Entry<T, Direction> entry : edges.entrySet()) {
+            recursivePlacesWithDistance(places, currentPlace, entry.getKey());
+        }
+    }
+
     public static void main(final String[] args) {
         final GraphFindAllPaths<Floor> graph = new GraphFindAllPaths<>();
         
@@ -122,4 +143,7 @@ public class FindOptimalPath<T extends Floor> {
         }
         
     }
+
+
+
 }

@@ -11,7 +11,7 @@ public class Action {
     private Coordinates coordinates;
 
 
-    Action(String actionType, Coordinates coordinates) {
+    public Action(String actionType, Coordinates coordinates) {
         this.actionType = actionType;
         this.coordinates = coordinates;
     }

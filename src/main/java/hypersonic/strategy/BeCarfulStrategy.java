@@ -17,7 +17,7 @@ public class BeCarfulStrategy extends Strategy {
     }
 
 
-    public boolean isSafetyPlace(Cell cell, List<Bomb> bombs) {
+    public static boolean isSafetyPlace(Cell cell, List<Bomb> bombs) {
         boolean isSafety = false;
 
         for (Bomb bomb : bombs) {
