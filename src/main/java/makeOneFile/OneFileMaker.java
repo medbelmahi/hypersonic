@@ -11,7 +11,7 @@ public class OneFileMaker {
     
     public static final String PLAYER_FILE_PATH = "C:\\Users\\MedBelmahi\\Desktop\\hypersonic\\hypersonic\\src\\main\\java\\playerFile\\Player.java";
     public static final String PACKAGE_PATH = "C:\\Users\\MedBelmahi\\Desktop\\hypersonic\\hypersonic\\src\\main\\java\\hypersonic";
-    public static final int UPDATE_RANGE = 10000; //milliseconds
+    public static final int UPDATE_RANGE_IN_SECOND = 5; //seconds
     
     public static void main(final String[] args) {
         while (true) {
@@ -25,7 +25,7 @@ public class OneFileMaker {
             makePlayerFile(content);
     
             try {
-                Thread.sleep(UPDATE_RANGE);
+                Thread.sleep(UPDATE_RANGE_IN_SECOND * 1000);
             } catch (final InterruptedException e) {
                 e.printStackTrace();
             }

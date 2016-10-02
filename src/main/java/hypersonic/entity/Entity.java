@@ -11,7 +11,7 @@ public abstract class Entity {
     public static final int BOMB_TYPE = 1;
     public static final int ITEM_TYPE = 2;
 
-    protected int explosionRange;
+    public int explosionRange;
 
     public Coordinates coordinates;
 
@@ -39,5 +39,10 @@ public abstract class Entity {
     public int rangeEndX(int x, int width) {
         int endX = x + ((explosionRange - 1));
         return endX < width ? endX : (width - 1);
+    }
+
+    public void update(int x, int y, int explosionRange) {
+        this.coordinates = new Coordinates(x, y);
+        this.explosionRange = explosionRange;
     }
 }

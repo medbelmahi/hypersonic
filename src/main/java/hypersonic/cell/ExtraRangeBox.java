@@ -7,4 +7,9 @@ class ExtraRangeBox extends Box {
     ExtraRangeBox(int x, int y) {
         super(x, y);
     }
+
+    @Override
+    public int value() {
+        return 2;
+    }
 }

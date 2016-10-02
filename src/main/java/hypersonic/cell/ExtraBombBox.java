@@ -8,4 +8,9 @@ class ExtraBombBox extends Box {
     ExtraBombBox(int x, int y) {
         super(x, y);
     }
+
+    @Override
+    public int value() {
+        return 2;
+    }
 }

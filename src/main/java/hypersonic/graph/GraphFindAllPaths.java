@@ -12,7 +12,7 @@ public class GraphFindAllPaths<T extends Floor> implements Iterable<T> {
     /* A map from nodes in the graph to sets of outgoing edges.  Each
      * set of edges is represented by a map from edges to doubles.
      */
-    private final Map<T, Map<T, Direction>> graph = new HashMap<T, Map<T, Direction>>();
+    public final Map<T, Map<T, Direction>> graph = new HashMap<T, Map<T, Direction>>();
 
     /**
      *  Adds a new node to the graph. If the node already exists then its a

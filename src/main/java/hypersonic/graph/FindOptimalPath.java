@@ -28,25 +28,34 @@ public class FindOptimalPath<T extends Floor> {
             throw new NullPointerException("The destination: " + destination + " cannot be  null.");
         }
         if (source.equals(destination)) {
-            throw new IllegalArgumentException("The source and destination: " + source + " cannot be the same.");
+            //throw new IllegalArgumentException("The source and destination: " + source + " cannot be the same.");
+            throw new IllegalArgumentException();
         }
     }
     
     public List<T> getOptimalPath(final T source, final T destination) {
-        validate(source, destination);
-        
-        final List<T> path = recursive(source, destination);
+        try {
+            validate(source, destination);
+        } catch (IllegalArgumentException e) {
+            return new ArrayList<T>();
+        }
+
+        List<T> alreadyList = new ArrayList<>();
+
+        final List<T> path = recursive(source, destination, alreadyList);
         return path;
     }
     
-    private List<T> recursive(final T current, final T destination) {
+    private List<T> recursive(final T current, final T destination, List<T> alreadyList) {
         final List<T> path = new ArrayList<>();
-        
+
+        alreadyList.add(current);
         if (current == destination) {
             path.add(current);
             return path;
         }
-        
+
+        //System.err.println("current : " + current.coordinates.toString());
         final Map<T, Direction> edges  = graph.edgesFrom(current);
         
         final LinkedList<Direction> directions = current.getDirections(destination);
@@ -54,11 +63,12 @@ public class FindOptimalPath<T extends Floor> {
         
         for (final Direction direction : directions) {
             for (final Map.Entry<T, Direction> entry : edges.entrySet()) {
-                if (direction.equals(entry.getValue())) {
-                    if (entry.getKey() != destination) {
-                        path.add(entry.getKey());
+                T entryKey = entry.getKey();
+                if (direction.equals(entry.getValue()) && !alreadyList.contains(entryKey)) {
+                    if (entryKey != destination) {
+                        path.add(entryKey);
                     }
-                    final List<T> recursivePath = recursive(entry.getKey(), destination);
+                    final List<T> recursivePath = recursive(entryKey, destination, alreadyList);
                     if (!recursivePath.isEmpty() && recursivePath.get(recursivePath.size() - 1) == destination) {
                         path.addAll(recursivePath);
                         return path;
@@ -88,12 +98,14 @@ public class FindOptimalPath<T extends Floor> {
     }
 
     private void recursivePlacesWithDistance(Map<T, Integer> places, T currentPlace, T destination) {
-        places.put(destination, getOptimalPath(currentPlace, destination).size());
+        if (places.size() > 10) {
+            places.put(destination, getOptimalPath(currentPlace, destination).size());
 
-        final Map<T, Direction> edges  = graph.edgesFrom(destination);
+            final Map<T, Direction> edges  = graph.edgesFrom(destination);
 
-        for (Map.Entry<T, Direction> entry : edges.entrySet()) {
-            recursivePlacesWithDistance(places, currentPlace, entry.getKey());
+            for (Map.Entry<T, Direction> entry : edges.entrySet()) {
+                recursivePlacesWithDistance(places, currentPlace, entry.getKey());
+            }
         }
     }
 

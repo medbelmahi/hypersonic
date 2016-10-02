@@ -1,5 +1,6 @@
 package hypersonic.cell;
 
+import hypersonic.entity.Bomb;
 import hypersonic.graph.Direction;
 
 import java.util.LinkedList;
@@ -11,9 +12,19 @@ public class Floor extends Cell implements Comparable<Floor>{
 
     private int numberOfReachableBox;
     private boolean isReachable;
+    private boolean isNotSafetyPlace;
+    private Bomb bomb;
     
     public Floor(final int x, final int y) {
         super(x, y);
+    }
+
+    @Override
+    public String presenter() {
+        if (isNotSafetyPlace) {
+            return String.valueOf(bomb.getCountDown());
+        }
+        return "O";
     }
 
     public boolean isFreePlace() {
@@ -45,5 +56,26 @@ public class Floor extends Cell implements Comparable<Floor>{
     
     public <T extends Floor> LinkedList<Direction> getDirections(final T destination) {
         return this.coordinates.getSortedDirection(destination.coordinates);
+    }
+
+    public boolean isNotSafetyPlace() {
+        return isNotSafetyPlace;
+    }
+
+    public void setNotSafetyPlace(boolean notSafetyPlace) {
+        isNotSafetyPlace = notSafetyPlace;
+    }
+
+    @Override
+    public String toString() {
+        return "box=" + numberOfReachableBox + " xy : " + coordinates.toString();
+    }
+
+    public Bomb getBomb() {
+        return bomb;
+    }
+
+    public void setBomb(Bomb bomb) {
+        this.bomb = bomb;
     }
 }

@@ -23,6 +23,10 @@ public abstract class Cell{
 
     public abstract int value();
 
+    public String presenter() {
+        return "O";
+    }
+
     public Cell rightCell(Cell[][] cells) {
         return coordinates.x + 1 < Grid.DEFAULT_WIDTH ? cells[coordinates.y][coordinates.x + 1] : null;
     }

@@ -1,6 +1,7 @@
 package hypersonic;
 
 
+import hypersonic.cell.Box;
 import hypersonic.cell.Cell;
 import hypersonic.cell.CellFactory;
 import hypersonic.cell.Floor;
@@ -8,7 +9,12 @@ import hypersonic.entity.Bomb;
 import hypersonic.entity.BomberMan;
 import hypersonic.entity.Entity;
 import hypersonic.entity.Item;
-import hypersonic.graph.*;
+import hypersonic.graph.FindOptimalPath;
+import hypersonic.graph.GraphFindAllPaths;
+import hypersonic.graph.GraphMaker;
+import hypersonic.graph.ReachableCalculator;
+import hypersonic.strategy.EatingStrategy;
+import hypersonic.util.DangerCalculator;
 
 import java.util.*;
 
@@ -23,7 +29,7 @@ public class Grid {
     private final int width;
     private final int height;
     private final int myPlayerId;
-    private final Cell[][] cells;
+    public static Cell[][] cells;
     private final List<Bomb> bombs;
     private final List<Item> items;
     private final Map<Integer, BomberMan> players;
@@ -31,7 +37,11 @@ public class Grid {
     private GraphFindAllPaths<Floor> pathGraph;
     private FindOptimalPath<Floor> findOptimalPath;
     private ReachableCalculator<Floor> reachableCalculator;
-    
+    private List<Box> boxes = new ArrayList<>();
+    private EatingStrategy eatingStrategy;
+    private Map<Floor, Entity> floorEntityMap = new HashMap<>();
+    private DangerCalculator dangerCalculator;
+
     public Grid(final int width, final int height, final int myPlayerId) {
         this.width = width;
         this.height = height;
@@ -49,15 +59,26 @@ public class Grid {
     public void addEntity(final int entityType, final int owner, final int x, final int y, final int param1,
             final int param2) {
         
+        BomberMan bomberMan = this.players.get(owner);
         switch (entityType) {
         case Entity.BOMBER_MAN_TYPE:
-            this.players.put(owner, new BomberMan(owner, x, y, param1, param2));
+            if (bomberMan != null) {
+                bomberMan.update(owner, x, y, param1, param2);
+            } else {
+                bomberMan = new BomberMan(owner, x, y, param1, param2);
+            }
+            this.players.put(owner, bomberMan);
+            this.floorEntityMap.put((Floor) cells[y][x], bomberMan);
             break;
         case Entity.BOMB_TYPE:
-            this.bombs.add(new Bomb(this.players.get(owner), x, y, param1, param2));
+            Bomb bomb = new Bomb(bomberMan, x, y, param1, param2);
+            this.bombs.add(bomb);
+            this.floorEntityMap.put((Floor) cells[y][x], bomb);
             break;
         case Entity.ITEM_TYPE:
-            this.items.add(new Item(owner, x, y, param1, param2));
+            Item item = new Item(owner, x, y, param1, param2);
+            this.items.add(item);
+            this.floorEntityMap.put((Floor) cells[y][x], item);
             break;
         default:
             throw new IllegalArgumentException();
@@ -67,93 +88,64 @@ public class Grid {
     public void nextRound() {
         this.bombs.clear();
         this.items.clear();
+        this.floorEntityMap.clear();
     }
     
     public String doAction() {
         
-        final Action action = this.myPlayer.makeAction();
+        final Action action = this.myPlayer.makeAction(this.findOptimalPath, this.pathGraph,
+                reachableCalculator.getSortedFloor(), this.bombs, this.boxes);
 
-
-       /* if (!myPlayer.cantPlaceBomb()) {
-            Coordinates bestRichPlace = bestRichPlace();
-            if (!bestRichPlace.equals(myPlayer.coordinates)) {
-                action = new Action(Action.MOVE, bestRichPlace);
-            }else{
-                action = new Action(Action.BOMB, myPlayer.coordinates);
-            }
-
-        }else{
-            Coordinates bestRichPlace = bestRichPlace();
-            action = new Action(Action.MOVE, bestRichPlace);
-        }*/
-        
         return action.toString() + " " + action.toString();
-    }
-    
-    private Coordinates bestRichPlace() {
-
-        /*System.err.println("first place " + places.iterator().next().coordinates.toString());
-        this.pathGraph = constructGraph(places);
-        System.err.println("traitement 1");
-        //FindAllPaths<Cell> findAllPaths = new FindAllPaths<Cell>(this.pathGraph);
-        System.err.println("traitement 2");
-        Cell currentPlace = cells[myPlayer.coordinates.y][myPlayer.coordinates.x];
-        for (Floor place : places) {
-            System.err.println("place (number="+place.getNumberOfReachableBox()+") " + place.coordinates.toString());
-
-            boolean hasBomb = false;
-            for (Bomb bomb : this.bombs) {
-                if (bomb.coordinates.equals(place.coordinates)) {
-                    hasBomb = true;
-                    break;
-                }
-            }
-
-            if (hasBomb) {
-                continue;
-            }
-
-            if (currentPlace.coordinates.equals(place.coordinates) || places.size() > 100) {
-                return place.coordinates;
-            }
-
-            try {
-                List<List<Cell>> paths = findAllPaths.getAllPaths(currentPlace, place);
-                if (paths != null && !paths.isEmpty()) {
-                    return place.coordinates;
-                }
-            } catch (NoSuchElementException e) {
-                System.err.println("(number="+place.getNumberOfReachableBox()+")no path for " + place.coordinates.toString());
-            }
-        }*/
-        return new Coordinates(0, 0);
     }
     
     public void init() {
         myPlayer = players.get(myPlayerId);
-        
+        myPlayer.setCurrentPlace(cells);
+
+
         final Set<Floor> places = new TreeSet<Floor>();
-        
+
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 if (cells[y][x] instanceof Floor) {
-                    //setNumberOfReachableBox(y, x);
                     places.add((Floor) cells[y][x]);
+                } else if (cells[y][x] instanceof Box) {
+                    boxes.add((Box) cells[y][x]);
                 }
             }
         }
         this.pathGraph = GraphMaker.constructGraph(places, this.cells);
-        
+
         this.reachableCalculator = new ReachableCalculator<Floor>(this.pathGraph, cells, myPlayer);
         reachableCalculator.setReachableCases((Floor) this.cells[myPlayer.coordinates.y][myPlayer.coordinates.x]);
-        
+
         final Iterator<Floor> iterator = places.iterator();
         while (iterator.hasNext()) {
             final Floor floor = iterator.next();
             if (!floor.isReachable())
                 places.remove(floor);
         }
-        
+
         this.findOptimalPath = new FindOptimalPath<>(this.pathGraph);
+
+        eatingStrategy = new EatingStrategy(this.items, this.findOptimalPath);
+        this.myPlayer.setEatingStrategy(eatingStrategy);
+
+        this.dangerCalculator = new DangerCalculator(floorEntityMap);
+        this.dangerCalculator.setDangerToAllCells(this.bombs);
+
+        gridPresenter();
+    }
+
+
+    private void gridPresenter() {
+        for (int y = 0; y < Grid.DEFAULT_HEIGHT; y++) {
+            String line = "";
+            for (int x = 0; x < Grid.DEFAULT_WIDTH; x++) {
+                line += cells[y][x].presenter();
+            }
+            System.err.println(line);
+        }
     }
 }
